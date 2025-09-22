@@ -1,0 +1,72 @@
+/*
+Problem: Shortest Path in Binary Matrix
+LeetCode: https://leetcode.com/problems/shortest-path-in-binary-matrix/
+Difficulty: Medium
+
+Description:
+- Given an n x n binary grid, 0 = open cell, 1 = blocked.
+- Find the shortest path from top-left (0,0) to bottom-right (n-1,n-1).
+- You can move in 8 directions (horizontal, vertical, diagonal).
+- Return the length of the shortest path, or -1 if not possible.
+
+Approach (BFS):
+1. Check if start or end cell is blocked → return -1.
+2. Use a queue to perform BFS, store (row, col, distance).
+3. Use a visited array to mark cells as visited when enqueued.
+4. Define 8-direction movement using dr[] and dc[] arrays.
+5. For each cell in queue:
+   - If it is the target, return distance.
+   - Enqueue all valid, unvisited neighbors with distance+1.
+6. If BFS ends without reaching target, return -1.
+
+Time Complexity: O(n^2) - each cell visited once
+Space Complexity: O(n^2) - queue + visited array
+*/
+
+import java.util.*;
+
+class Solution {
+    public int shortestPathBinaryMatrix(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        // Step 1: Check blocked start or end
+        if(grid[0][0] == 1 || grid[m-1][n-1] == 1) return -1;
+
+        // Step 2: Initialize BFS queue
+        Queue<int[]> q = new LinkedList<>();
+        q.add(new int[]{0, 0, 1}); // row, col, distance
+
+        // Step 3: Visited array
+        boolean[][] visited = new boolean[m][n];
+        visited[0][0] = true;
+
+        // Step 4: 8 directions
+        int[] dr = {-1,-1,-1,0,0,1,1,1};
+        int[] dc = {-1,0,1,-1,1,-1,0,1};
+
+        // Step 5: BFS
+        while(!q.isEmpty()) {
+            int[] curr = q.poll();
+            int r = curr[0], c = curr[1], dist = curr[2];
+
+            // Step 5a: Check target
+            if(r == m-1 && c == n-1) return dist;
+
+            // Step 5b: Explore neighbors
+            for(int i = 0; i < 8; i++) {
+                int nr = r + dr[i];
+                int nc = c + dc[i];
+
+                if(nr >= 0 && nr < m && nc >= 0 && nc < n &&
+                   grid[nr][nc] == 0 && !visited[nr][nc]) {
+                    q.add(new int[]{nr, nc, dist + 1});
+                    visited[nr][nc] = true;
+                }
+            }
+        }
+
+        // Step 6: Target not reachable
+        return -1;
+    }
+}
