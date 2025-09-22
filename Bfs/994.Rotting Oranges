@@ -1,0 +1,79 @@
+/*
+Problem: Rotting Oranges
+LeetCode: https://leetcode.com/problems/rotting-oranges/
+Difficulty: Medium
+
+Description:
+- Given a 2D grid where:
+  0 = empty cell
+  1 = fresh orange
+  2 = rotten orange
+- Every minute, all fresh oranges adjacent (up, down, left, right) to a rotten orange become rotten.
+- Return the minimum minutes required to rot all oranges, or -1 if impossible.
+
+Approach (BFS on Grid):
+1. Initialize a queue to store all rotten oranges along with the minute when they rot.
+2. Count the total fresh oranges.
+3. Use 4-direction arrays (dr, dc) to explore neighbors concisely:
+   dr = {-1, 1, 0, 0}  // row changes
+   dc = {0, 0, -1, 1}  // col changes
+4. While the queue is not empty:
+   a. Pop current cell (r, c, minute)
+   b. For each direction, compute neighbor (nr, nc)
+   c. If neighbor is inside bounds and is fresh:
+       - Mark it rotten (grid[nr][nc] = 2)
+       - Decrease fresh count
+       - Enqueue neighbor with time = minute + 1
+5. After BFS, if any fresh oranges remain → return -1
+   Else → return total minutes
+
+Time Complexity: O(n*m) - each cell visited once
+Space Complexity: O(n*m) - queue can hold all oranges
+*/
+
+import java.util.*;
+
+class RottingOranges {
+    public int orangesRotting(int[][] grid) {
+        int n = grid.length;
+        int m = grid[0].length;
+        Queue<int[]> q = new LinkedList<>();
+        int freshCount = 0;
+
+        // Step 1: Initialize queue with rotten oranges and count fresh oranges
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (grid[i][j] == 2) q.add(new int[]{i, j, 0});
+                else if (grid[i][j] == 1) freshCount++;
+            }
+        }
+
+        // Step 2: Define 4 directions (up, down, left, right)
+        int[] dr = {-1, 1, 0, 0};
+        int[] dc = {0, 0, -1, 1};
+
+        int minutes = 0;
+
+        // Step 3: BFS traversal
+        while (!q.isEmpty()) {
+            int[] curr = q.poll();
+            int r = curr[0], c = curr[1], time = curr[2];
+            minutes = Math.max(minutes, time);
+
+            for (int i = 0; i < 4; i++) {
+                int nr = r + dr[i];
+                int nc = c + dc[i];
+
+                // Check bounds and if neighbor is fresh
+                if (nr >= 0 && nr < n && nc >= 0 && nc < m && grid[nr][nc] == 1) {
+                    grid[nr][nc] = 2; // rot the orange
+                    freshCount--;
+                    q.add(new int[]{nr, nc, time + 1});
+                }
+            }
+        }
+
+        // Step 4: Check if all oranges are rotten
+        return freshCount == 0 ? minutes : -1;
+    }
+}
