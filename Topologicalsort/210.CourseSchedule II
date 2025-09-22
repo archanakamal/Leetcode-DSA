@@ -1,0 +1,72 @@
+/*
+Problem: Course Schedule II
+LeetCode: https://leetcode.com/problems/course-schedule-ii/
+Difficulty: Medium
+
+Description:
+- Given 'n' courses labeled 0 to n-1 and a list of prerequisites.
+- Return a possible order to take all courses so that all prerequisites are satisfied.
+- If impossible (cycle exists), return an empty array.
+
+Approach (BFS - Kahn's Algorithm):
+1. Build adjacency list: for each [a,b], add an edge b -> a (b is prerequisite of a).
+2. Compute indegree of each node (number of incoming edges).
+3. Initialize a queue with nodes having indegree 0 (courses with no prerequisites).
+4. While the queue is not empty:
+   - Remove a node, add it to the result.
+   - Decrease indegree of its neighbors by 1.
+   - If any neighbor's indegree becomes 0, add it to the queue.
+5. After BFS, if the result size < n, a cycle exists → return empty array.
+6. Otherwise, return the result as a valid course order.
+
+Time Complexity: O(V + E) - visiting each node and edge once.
+Space Complexity: O(V + E) - adjacency list + indegree array + queue.
+*/
+
+import java.util.*;
+
+class Solution {
+    public int[] findOrder(int n, int[][] prerequisites) {
+        // Step 1: Build adjacency list
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int[] edge : prerequisites) {
+            int course = edge[0];
+            int prereq = edge[1];
+            adj.get(prereq).add(course); // prereq -> course
+        }
+
+        // Step 2: Compute indegree
+        int[] indegree = new int[n];
+        for (int i = 0; i < n; i++) {
+            for (int nei : adj.get(i)) {
+                indegree[nei]++;
+            }
+        }
+
+        // Step 3: Queue of zero-indegree nodes
+        Queue<Integer> q = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            if (indegree[i] == 0) q.add(i);
+        }
+
+        // Step 4: BFS to generate topological order
+        List<Integer> topo = new ArrayList<>();
+        while (!q.isEmpty()) {
+            int node = q.poll();
+            topo.add(node);
+            for (int nei : adj.get(node)) {
+                indegree[nei]--;
+                if (indegree[nei] == 0) q.add(nei);
+            }
+        }
+
+        // Step 5: Check for cycle
+        if (topo.size() < n) return new int[0];
+
+        // Convert List<Integer> to int[]
+        int[] result = new int[n];
+        for (int i = 0; i < n; i++) result[i] = topo.get(i);
+        return result;
+    }
+}
