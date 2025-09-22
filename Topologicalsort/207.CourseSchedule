@@ -1,0 +1,65 @@
+/*
+Problem: Course Schedule II
+LeetCode: https://leetcode.com/problems/course-schedule-ii/
+Difficulty: Medium
+
+Description:
+- You are given 'n' courses labeled from 0 to n-1 and a list of prerequisites.
+- Return a possible order to take the courses such that all prerequisites are satisfied.
+- If impossible (cycle exists), return an empty array.
+
+Approach (BFS - Kahn's Algorithm):
+1. Build adjacency list for the graph: for each edge [a,b], add an edge b -> a.
+2. Compute indegree of each node (number of incoming edges).
+3. Initialize a queue with all nodes having indegree 0 (courses with no prerequisites).
+4. While the queue is not empty:
+   - Remove a node, add it to the result.
+   - Decrease indegree of its neighbors by 1.
+   - If any neighbor’s indegree becomes 0, add it to the queue.
+5. If result size < n, a cycle exists → return empty array.
+6. Otherwise, return the result as the course order.
+
+Time Complexity: O(V + E) - visiting all nodes and edges once.
+Space Complexity: O(V + E) - adjacency list + indegree array + queue.
+*/
+
+class Solution {
+    public boolean canFinish(int n, int[][] prerequisites) {
+        // Step 1: Build adjacency list
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int[] edge : prerequisites) {
+            int course = edge[0];
+            int prereq = edge[1];
+            adj.get(prereq).add(course); // prereq -> course
+        }
+
+        // Step 2: Compute indegree
+        int[] indegree = new int[n];
+        for (int i = 0; i < n; i++) {
+            for (int nei : adj.get(i)) {
+                indegree[nei]++;
+            }
+        }
+
+        // Step 3: Queue of zero-indegree nodes
+        Queue<Integer> q = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            if (indegree[i] == 0) q.add(i);
+        }
+
+        // Step 4: BFS
+        int count = 0; // count of courses we can take
+        while (!q.isEmpty()) {
+            int node = q.poll();
+            count++;
+            for (int nei : adj.get(node)) {
+                indegree[nei]--;
+                if (indegree[nei] == 0) q.add(nei);
+            }
+        }
+
+        // Step 5: Check if all courses are taken
+        return count == n;
+    }
+}
