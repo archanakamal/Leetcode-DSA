@@ -1,0 +1,50 @@
+/*
+ * Problem: 743. Network Delay Time
+ * Link: https://leetcode.com/problems/network-delay-time/
+ * 
+ * Description:
+ * Given a directed weighted graph (times) and a starting node K, return the time it 
+ * takes for all nodes to receive a signal from K. If impossible, return -1.
+ * 
+ * Approach:
+ * - Use Dijkstra's algorithm to find the shortest path from K to all nodes.
+ * - Use a min-heap / priority queue to always expand the node with the smallest distance.
+ * - Track the maximum distance among all reachable nodes.
+ *
+ * Time Complexity: O(E log V) using a priority queue
+ * Space Complexity: O(V + E) for graph + priority queue
+ */
+class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        List<List<int[]>> adj=new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            adj.add(new ArrayList<>());
+        }
+        for(int i=0;i<times.length;i++){
+            adj.get(times[i][0]).add(new int[]{times[i][1],times[i][2]});
+        }
+        int[] dist=new int[n+1];
+        Arrays.fill(dist,Integer.MAX_VALUE);
+        dist[k]=0;
+        PriorityQueue<int[]> pq=new PriorityQueue<>(Comparator.comparing(a->a[1]));
+        pq.offer(new int[]{k,0});
+        while(!pq.isEmpty()){
+            int[] curr=pq.poll();
+            int node=curr[0],d=curr[1];
+            if(d>dist[node])continue;
+            for(int[] nei:adj.get(node)){
+                int next=nei[0],weight=nei[1];
+                if(dist[node]+weight<dist[next]){
+                    dist[next]=dist[node]+weight;
+                    pq.offer(new int[]{next,dist[next]});
+                }
+            }
+        }
+        int ans = 0;
+        for (int i = 1; i <= n; i++) {
+            if (dist[i] == Integer.MAX_VALUE) return -1;
+            ans = Math.max(ans, dist[i]);
+        }
+        return ans;
+    }
+}
